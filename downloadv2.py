@@ -29,21 +29,21 @@ def get_html(url):
     if(soup.find_all('table')):
         nor_text = ""
         #v1
-        # for table in soup.find_all('table'): nor_text += str(table)
+        for table in soup.find_all('table'): nor_text += str(table)
 
         #v2
-        nor_text = ' '.join([table.get_text(separator=' ', strip=True) for table in soup.find_all('table')])
+        # nor_text = ' '.join([table.get_text(separator=' ', strip=True) for table in soup.find_all('table')])
         return nor_text
     else:
         human_datas = soup.find_all(string=lambda text: "人事" in text)
         #v1
-        # nor_text = ""
-        # for data in human_datas:
-        #     parent = data.find_parent()
-        #     nor_text += str(parent)
+        nor_text = ""
+        for data in human_datas:
+            parent = data.find_parent()
+            nor_text += str(parent)
         
         #v2
-        nor_text = ' '.join([data.find_parent().get_text(separator=' ', strip=True) for data in human_datas])
+        # nor_text = ' '.join([data.find_parent().get_text(separator=' ', strip=True) for data in human_datas])
 
         return nor_text
 
@@ -118,5 +118,5 @@ def main():
     print(data)
     return data
 json_data = main()
-with open("人事情報v2.json", "w",encoding='utf-8') as f:
+with open("人事情報v1.json", "w",encoding='utf-8') as f:
     json.dump(json_data, f, indent=4, ensure_ascii=False)
