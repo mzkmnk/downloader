@@ -51,13 +51,6 @@ def analysis(question):
     client = OpenAI(
         api_key=openai_key
     )
-    schema = [
-        {
-            "name":"string",
-            "former_postion":"string",
-            "new_position":"string",
-        }
-    ]
     res = client.chat.completions.create(
             messages=[
                 {
@@ -97,26 +90,47 @@ def extraction(message):
     json_datas = []
     error_datas = []
     for i,match in enumerate(matches):
-        print(match)
         try:
             json_data = json.loads(match)
             for j in json_data:
                 json_datas.append([i,j])
         except json.JSONDecodeError as e:
             error_datas.append([i,match])
+
     return (json_datas, error_datas)
 
 def main():
     data = []
-    for url in df["url"]:
+
+    error = []
+    for i,url in enumerate(df["url"]):
         print(f"{url = }")
         human_info = get_html(url)
         res = analysis(human_info)
         json_datas,error_datas = extraction(res.choices[0].message.content)
         for json_data in json_datas:
-            data.append(json_data[1])
-    print(data)
-    return data
-json_data = main()
+            print(json_data[1])
+            data.append(
+                {
+                    "id":i+1,
+                    "url":url,
+                    "name":json_data[1]["name"],
+                    "former_postion":json_data[1]["former_postion"],
+                    "new_position":json_data[1]["new_position"]
+                }
+            )
+        for error_data in error_datas:
+            error.append(
+                {
+                    "id":i+1,
+                    "url":url,
+                    "error":error_data[1]
+                }
+            )
+    return data,error
+data,error = main()
 with open("人事情報v1.json", "w",encoding='utf-8') as f:
-    json.dump(json_data, f, indent=4, ensure_ascii=False)
+    json.dump(data, f, indent=4, ensure_ascii=False)
+
+with open("エラー情報v1.json", "w",encoding='utf-8') as f:
+    json.dump(error, f, indent=4, ensure_ascii=False)
